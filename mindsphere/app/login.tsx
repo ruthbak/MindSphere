@@ -63,7 +63,7 @@ export default function Login() {
 
     try {
       // Replace with your actual API endpoint
-      const API_URL = 'https://0eeb7eb6ea7b.ngrok-free.app/auth/login'; // UPDATE THIS
+      const API_URL = 'https://your-api-endpoint.com/api/login'; // UPDATE THIS
       
       const requestBody = {
         username: username.trim(),
@@ -104,8 +104,8 @@ export default function Login() {
                 setUsername('');
                 setPassword('');
                 
-                // Navigate to main app (tabs)
-                router.push('/(tabs)');
+                // Navigate to homepage
+                router.push('/homepage');
               },
             },
           ]
