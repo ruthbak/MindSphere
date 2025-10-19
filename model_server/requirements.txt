@@ -1,0 +1,13 @@
+# model_server/requirements.txt
+
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+torch==2.1.0
+transformers==4.33.2
+openai-whisper==20231117
+TTS==0.20.0
+sentencepiece==0.1.99
+accelerate==0.24.1
+python-multipart==0.0.6
+llama-cpp-python==0.2.20
