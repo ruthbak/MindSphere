@@ -63,7 +63,7 @@ export default function Login() {
 
     try {
       // Replace with your actual API endpoint
-      const API_URL = 'https://your-api-endpoint.com/api/login'; // UPDATE THIS
+      const API_URL = 'https://mindsphere-backend.onrender.com/auth/login'; // UPDATE THIS
       
       const requestBody = {
         username: username.trim(),

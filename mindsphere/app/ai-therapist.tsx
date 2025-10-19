@@ -9,8 +9,12 @@ import {
   Platform,
   StyleSheet,
   SafeAreaView,
+  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Audio } from 'expo-av';
+import * as FileSystem from 'expo-file-system';
+import BottomNavBar from './components/BottomNavBar';
 
 // Message type definition
 interface Message {
@@ -22,11 +26,12 @@ interface Message {
 
 // API Configuration
 const API_CONFIG = {
-  baseUrl: 'https://your-api-endpoint.com/api',
+  baseUrl: 'https://mindsphere-backend.onrender.com',
   endpoints: {
     sendMessage: '/chat/message',
     getHistory: '/chat/history',
-    startSession: '/chat/session/start'
+    startSession: '/chat/session/start',
+    speechToText: '/speech-to-text',
   }
 };
 
@@ -51,23 +56,13 @@ export default function AITherapist() {
       sender: 'bot',
       timestamp: new Date()
     },
-    {
-      id: '4',
-      text: "Hi Luma, I haven't been feeling the best and school is very stressful. I have a lot of assignments and I am overwhelmed",
-      sender: 'user',
-      timestamp: new Date()
-    },
-    {
-      id: '5',
-      text: "That sounds like a really heavy load, and it makes sense that you're feeling overwhelmed right now.\n\nSchool can pile up fast, especially when assignments keep coming in all at once.",
-      sender: 'bot',
-      timestamp: new Date()
-    }
   ]);
 
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
 
   // Auto-scroll to bottom when new messages arrive
@@ -78,7 +73,21 @@ export default function AITherapist() {
   // Initialize chat session
   useEffect(() => {
     initializeSession();
+    setupAudioMode();
   }, []);
+
+  // Setup audio recording permissions and mode
+  const setupAudioMode = async () => {
+    try {
+      await Audio.requestPermissionsAsync();
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
+    } catch (error) {
+      console.error('Failed to setup audio:', error);
+    }
+  };
 
   // API Functions
   const initializeSession = async () => {
@@ -130,39 +139,139 @@ export default function AITherapist() {
     }
   };
 
-  const fetchChatHistory = async () => {
+  // Start recording audio
+  const startRecording = async () => {
     try {
-      const response = await fetch(
-        `${API_CONFIG.baseUrl}${API_CONFIG.endpoints.getHistory}?sessionId=${sessionId}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        }
+      const { status } = await Audio.requestPermissionsAsync();
+      
+      if (status !== 'granted') {
+        Alert.alert(
+          'Permission Required',
+          'Please grant microphone permissions to use voice input.',
+          [{ text: 'OK' }]
+        );
+        return;
+      }
+
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
+
+      const { recording } = await Audio.Recording.createAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY
       );
 
-      if (response.ok) {
-        const data = await response.json();
-        const historyMessages = data.messages.map((msg: any, idx: number) => ({
-          id: `history-${idx}`,
-          text: msg.text,
-          sender: msg.sender,
-          timestamp: new Date(msg.timestamp)
-        }));
-        setMessages(historyMessages);
-      }
+      setRecording(recording);
+      setIsRecording(true);
+      console.log('Recording started');
     } catch (error) {
-      console.error('Failed to fetch chat history:', error);
+      console.error('Failed to start recording:', error);
+      Alert.alert('Error', 'Failed to start recording. Please try again.');
     }
   };
 
-  const handleSendMessage = async () => {
-    if (!inputValue.trim() || isLoading) return;
+  // Stop recording and convert to text
+  const stopRecording = async () => {
+    if (!recording) return;
+
+    try {
+      setIsRecording(false);
+      await recording.stopAndUnloadAsync();
+      const uri = recording.getURI();
+      
+      if (!uri) {
+        Alert.alert('Error', 'No audio recorded');
+        return;
+      }
+
+      console.log('Recording stopped, URI:', uri);
+      
+      // Convert speech to text
+      await convertSpeechToText(uri);
+      
+      setRecording(null);
+    } catch (error) {
+      console.error('Failed to stop recording:', error);
+      Alert.alert('Error', 'Failed to process recording.');
+    }
+  };
+
+  // Convert speech to text using API
+  const convertSpeechToText = async (audioUri: string) => {
+    try {
+      setIsLoading(true);
+
+      // Read the audio file as base64
+      const audioFile = await FileSystem.readAsStringAsync(audioUri, {
+        encoding: 'base64',
+      });
+
+      // Send to speech-to-text API
+      const response = await fetch(`${API_CONFIG.baseUrl}${API_CONFIG.endpoints.speechToText}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          audio: audioFile,
+          encoding: 'base64',
+          format: 'm4a',
+          userId: 'aurora1111',
+          sessionId: sessionId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Speech-to-text conversion failed');
+      }
+
+      const data = await response.json();
+      const transcribedText = data.text || data.transcription || '';
+
+      if (transcribedText) {
+        setInputValue(transcribedText);
+        Alert.alert('Transcription Complete', `Recognized: "${transcribedText}"`, [
+          {
+            text: 'Send',
+            onPress: () => handleSendMessage(transcribedText),
+          },
+          {
+            text: 'Edit',
+            style: 'cancel',
+          },
+        ]);
+      } else {
+        Alert.alert('Error', 'Could not transcribe audio. Please try again.');
+      }
+    } catch (error) {
+      console.error('Speech-to-text error:', error);
+      Alert.alert(
+        'Transcription Failed',
+        'Could not convert speech to text. Please type your message instead.'
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle voice input button press
+  const handleVoiceInput = async () => {
+    if (isRecording) {
+      await stopRecording();
+    } else {
+      await startRecording();
+    }
+  };
+
+  const handleSendMessage = async (messageText?: string) => {
+    const textToSend = messageText || inputValue;
+    
+    if (!textToSend.trim() || isLoading) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
-      text: inputValue,
+      text: textToSend,
       sender: 'user',
       timestamp: new Date()
     };
@@ -171,7 +280,7 @@ export default function AITherapist() {
     setInputValue('');
     setIsLoading(true);
 
-    const botResponse = await sendMessageToAPI(inputValue);
+    const botResponse = await sendMessageToAPI(textToSend);
 
     const botMessage: Message = {
       id: (Date.now() + 1).toString(),
@@ -182,11 +291,6 @@ export default function AITherapist() {
 
     setMessages(prev => [...prev, botMessage]);
     setIsLoading(false);
-  };
-
-  const handleVoiceInput = () => {
-    // Placeholder for voice input - integrate with expo-speech or similar
-    alert('Voice input feature - Connect to speech-to-text API');
   };
 
   return (
@@ -225,6 +329,14 @@ export default function AITherapist() {
             <Text style={styles.dateBadgeText}>Today</Text>
           </View>
         </View>
+
+        {/* Recording Indicator */}
+        {isRecording && (
+          <View style={styles.recordingIndicator}>
+            <View style={styles.recordingDot} />
+            <Text style={styles.recordingText}>Recording... Tap to stop</Text>
+          </View>
+        )}
 
         {/* Messages */}
         <ScrollView
@@ -291,32 +403,41 @@ export default function AITherapist() {
               style={styles.input}
               value={inputValue}
               onChangeText={setInputValue}
-              placeholder=""
+              placeholder="Type a message..."
               placeholderTextColor="#9CA3AF"
               multiline
-              editable={!isLoading}
+              editable={!isLoading && !isRecording}
             />
 
             <TouchableOpacity
-              style={styles.voiceButton}
+              style={[
+                styles.voiceButton,
+                isRecording && styles.voiceButtonActive
+              ]}
               onPress={handleVoiceInput}
+              disabled={isLoading}
             >
-              <Text style={styles.voiceButtonText}>🎤</Text>
+              <Text style={styles.voiceButtonText}>
+                {isRecording ? '⏹️' : '🎤'}
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[
                 styles.sendButton,
-                (!inputValue.trim() || isLoading) && styles.sendButtonDisabled
+                (!inputValue.trim() || isLoading || isRecording) && styles.sendButtonDisabled
               ]}
-              onPress={handleSendMessage}
-              disabled={!inputValue.trim() || isLoading}
+              onPress={() => handleSendMessage()}
+              disabled={!inputValue.trim() || isLoading || isRecording}
             >
               <Text style={styles.sendButtonText}>➤</Text>
             </TouchableOpacity>
           </View>
         </View>
       </KeyboardAvoidingView>
+
+      {/* Bottom Navigation */}
+      <BottomNavBar />
     </SafeAreaView>
   );
 }
@@ -406,13 +527,37 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
   },
+  recordingIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#ef4444',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    marginHorizontal: 20,
+    borderRadius: 20,
+    marginBottom: 10,
+    zIndex: 10,
+  },
+  recordingDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#ffffff',
+    marginRight: 8,
+  },
+  recordingText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
   messagesContainer: {
     flex: 1,
     zIndex: 10,
   },
   messagesContent: {
     paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingBottom: 100,
   },
   messageWrapper: {
     marginBottom: 16,
@@ -484,6 +629,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     padding: 16,
     zIndex: 10,
+    paddingBottom: 100,
   },
   inputWrapper: {
     flexDirection: 'row',
@@ -508,6 +654,10 @@ const styles = StyleSheet.create({
     padding: 8,
     marginLeft: 8,
   },
+  voiceButtonActive: {
+    backgroundColor: '#ef4444',
+    borderRadius: 20,
+  },
   voiceButtonText: {
     fontSize: 20,
   },
@@ -528,4 +678,3 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
 });
-

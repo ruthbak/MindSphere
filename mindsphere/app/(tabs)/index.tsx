@@ -37,31 +37,23 @@ export default function HomeScreen() {
         </ThemedText>
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
+        <Link href="/ai-therapist">
           <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
+            <ThemedText type="subtitle">Step 2: Try AI Therapist</ThemedText>
           </Link.Trigger>
           <Link.Preview />
           <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
+            <Link.MenuAction title="Open" icon="cube" onPress={() => {}} />
             <Link.MenuAction
               title="Share"
               icon="square.and.arrow.up"
               onPress={() => alert('Share pressed')}
             />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
           </Link.Menu>
         </Link>
 
         <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
+          {`Tap to explore the AI Therapist feature.`}
         </ThemedText>
       </ThemedView>
       <ThemedView style={styles.stepContainer}>

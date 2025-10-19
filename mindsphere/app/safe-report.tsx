@@ -192,7 +192,7 @@ export default function SafeReport() {
     setIsLoading(true);
 
     try {
-      const API_URL = 'https://e587a26be7e6.ngrok-free.app/reports'; 
+      const API_URL = 'https://mindsphere-backend.onrender.com/reports'; 
       
       const requestBody = {
         report_type: selectedType,

@@ -113,7 +113,7 @@ export default function CreateAccount() {
 
     try {
       // Updated API endpoint with /register path
-      const API_URL = 'https://0eeb7eb6ea7b.ngrok-free.app/auth/register';
+      const API_URL = 'https://mindsphere-backend.onrender.com/auth/register';
       
       // Generate username from display name
       const username = generateUsername(displayName);
