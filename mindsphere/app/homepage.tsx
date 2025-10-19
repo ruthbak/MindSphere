@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import BottomNavBar from './components/BottomNavBar';
-
+import { LinearGradient } from 'expo-linear-gradient';
 
 const MoodCard = ({ 
   mood, 
@@ -179,22 +179,37 @@ export default function Homepage() {
           {/* Quote and Meditation Cards Side by Side */}
           <View style={styles.cardsRow}>
             {/* Quote Card */}
-            <View style={styles.quoteCard}>
-              <Text style={styles.quoteText}>
-                The journey to mental wellness begins with a single step
-              </Text>
-              <Text style={styles.quoteAuthor}>-Unknown</Text>
-            </View>
+             <LinearGradient
+                  colors={['#A7D8C3', '#86CFAC', '#5D9B8E']}
+                  start={{ x: 0.5, y: 0.5 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.quoteCard}
+                >
+                <Text style={styles.quoteText}>
+                  The journey to mental wellness begins with a single step
+                </Text>
+                <Text style={styles.quoteAuthor}>-Unknown</Text>
+              </LinearGradient>
 
             {/* Meditation Card */}
-            <View style={styles.meditationCard}>
-              <View style={styles.meditationIcon}>
-                <Text style={styles.meditationEmoji}>🌱</Text>
-              </View>
-              <Text style={styles.meditationTitle}>Meditation</Text>
-              <Text style={styles.meditationSubtitle}>Start your Session</Text>
-              <Text style={styles.meditationDuration}>5 Minutes</Text>
-            </View>
+              <TouchableOpacity
+                onPress={() => router.push('/meditation')}
+                activeOpacity={0.8}
+              >
+                <LinearGradient
+                  colors={['#C8E6D5', '#A7D8C3', '#86CFAC']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 0, y: 1 }}
+                  style={styles.meditationCard}
+                >
+                  <View style={styles.meditationIcon}>
+                    <Text style={styles.meditationEmoji}>🌱</Text>
+                  </View>
+                  <Text style={styles.meditationTitle}>Meditation</Text>
+                  <Text style={styles.meditationSubtitle}>Start your Session</Text>
+                  <Text style={styles.meditationDuration}>5 Minutes</Text>
+                </LinearGradient>
+              </TouchableOpacity>
           </View>
 
           {/* Activities Section */}
@@ -325,46 +340,47 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 300,
     borderTopRightRadius: 300,
     paddingHorizontal: 20,
-    paddingTop: 100,
+    paddingTop: 40,
     marginTop: -160,
     minHeight: 600,
   },
 
   moodQuestion: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
     color: '#0891B2',
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: 10,
   },
 
   moodSection: {
     backgroundColor: '#ffffff',
-    borderRadius: 40,
-    padding: 20,
-    paddingVertical: 24,
+    borderRadius: 100,
+    paddingHorizontal: 8,
+    paddingVertical: 14,
     marginBottom: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 12,
     elevation: 8,
+    marginHorizontal: 15,
   },
 
   moodsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-around',
-    gap: 8,
+    justifyContent: 'space-between',
+    paddingHorizontal: 4,
   },
   moodButton: {
-    width: '15%',
+    width: '15.5%',
   },
   moodCard: {
     alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 4,
-    borderRadius: 12,
+    paddingVertical: 4,
+    paddingHorizontal: 1,
+    borderRadius: 10,
     backgroundColor: 'transparent',
   },
   moodCardSelected: {
@@ -373,71 +389,83 @@ const styles = StyleSheet.create({
     borderColor: '#0891B2',
   },
   moodImage: {
-    width: 50,
-    height: 50,
-    marginBottom: 4,
+    width: 45,
+    height: 45,
+    marginBottom: 3,
   },
   moodLabel: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600',
     textAlign: 'center',
   },
 
   cardsRow: {
-    flexDirection: 'row',
-    gap: 16,
-    marginBottom: 24,
-  },
+  flexDirection: 'row',
+  gap: 16,
+  marginBottom: 24,
+},
 
-  quoteCard: {
-    flex: 1,
-    backgroundColor: '#86CFAC',
-    borderRadius: 20,
-    padding: 20,
-    justifyContent: 'center',
-  },
-  quoteText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#ffffff',
-    marginBottom: 8,
-    lineHeight: 22,
-  },
-  quoteAuthor: {
-    fontSize: 12,
-    color: '#ffffff',
-    fontStyle: 'italic',
-  },
+quoteCard: {
+  flex: 1,
+  borderRadius: 20,
+  padding: 20,
+  justifyContent: 'center',
+  borderWidth: 3,
+  borderColor: '#5D9B8E',
+},
 
-  meditationCard: {
-    flex: 1,
-    backgroundColor: '#A7D8C3',
-    borderRadius: 20,
-    padding: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  meditationIcon: {
-    marginBottom: 8,
-  },
-  meditationEmoji: {
-    fontSize: 32,
-  },
-  meditationTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#064E3B',
-    marginBottom: 4,
-  },
-  meditationSubtitle: {
-    fontSize: 12,
-    color: '#064E3B',
-    marginBottom: 6,
-  },
-  meditationDuration: {
-    fontSize: 11,
-    color: '#6B7280',
-  },
+quoteText: {
+  fontSize: 16,
+  fontWeight: '700',
+  color: '#ffffff',
+  marginBottom: 8,
+  lineHeight: 22,
+},
+quoteAuthor: {
+  fontSize: 12,
+  color: '#ffffff',
+  fontStyle: 'italic',
+  fontWeight: '500',
+},
+
+meditationCard: {
+  flex: 1,
+  borderRadius: 20,
+  padding: 20,
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderWidth: 3,
+  borderColor: '#86CFAC',
+},
+
+meditationIcon: {
+  marginBottom: 8,
+  width: 48,
+  height: 48,
+  borderRadius: 24,
+  backgroundColor: '#ffffff',
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+meditationEmoji: {
+  fontSize: 28,
+},
+meditationTitle: {
+  fontSize: 18,
+  fontWeight: '700',
+  color: '#000000',
+  marginBottom: 4,
+},
+meditationSubtitle: {
+  fontSize: 13,
+  color: '#374151',
+  marginBottom: 12,
+},
+meditationDuration: {
+  fontSize: 12,
+  color: '#6B7280',
+  fontWeight: '500',
+},
 
   sectionTitle: {
     fontSize: 20,
@@ -445,7 +473,7 @@ const styles = StyleSheet.create({
     color: '#000000',
     marginBottom: 16,
   },
- activitiesContainer: {
+  activitiesContainer: {
   flexDirection: 'row',
   gap: 16,
   marginBottom: 24,
@@ -453,14 +481,18 @@ const styles = StyleSheet.create({
 activityCard: {
   flex: 1,
   backgroundColor: '#5D9B8E',
-  borderRadius: 16,
-  paddingVertical: 20,
-  alignItems: 'center',
-  justifyContent: 'center',
+  borderRadius: 20,
+  paddingVertical: 24,
+  paddingHorizontal: 16,
+  alignItems: 'flex-start',
+  justifyContent: 'flex-start',
   minHeight: 140,
+  borderWidth: 3,
+  borderColor: '#2D5A52',
 },
 activityCardAlt: {
   backgroundColor: '#A7D8C3',
+  borderColor: '#86CFAC',
 },
 activityIconCircle: {
   width: 48,
@@ -469,16 +501,16 @@ activityIconCircle: {
   backgroundColor: '#ffffff',
   alignItems: 'center',
   justifyContent: 'center',
-  marginBottom: 12,
+  marginBottom: 16,
 },
 activityIcon: {
   fontSize: 24,
+  color: '#000000',
 },
 activityLabel: {
-  fontSize: 16,
+  fontSize: 18,
   fontWeight: '700',
   color: '#ffffff',
-  textAlign: 'center',
+  textAlign: 'left',
 },
-
 });
