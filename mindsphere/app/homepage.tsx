@@ -142,7 +142,7 @@ export default function Homepage() {
             <Text style={styles.greetingText}>✨ {greeting}</Text>
           </View>
 
-          <Text style={styles.userName}>Hi Aurora!</Text>
+          <Text style={styles.userName}>Hi There!</Text>
 
           <View style={styles.badgesContainer}>
             <View style={[styles.badge, styles.proMemberBadge]}>

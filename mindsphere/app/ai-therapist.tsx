@@ -22,10 +22,10 @@ interface Message {
 
 // API Configuration
 const API_CONFIG = {
-  baseUrl: 'https://your-api-endpoint.com/api',
+  baseUrl: 'https://mindsphere-backend.onrender.com',
   endpoints: {
     sendMessage: '/chat/message',
-    getHistory: '/chat/history',
+    getHistory: '/chat/history/{user_id}',
     startSession: '/chat/session/start'
   }
 };

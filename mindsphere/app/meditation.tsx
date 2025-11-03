@@ -59,9 +59,9 @@ export default function Meditation() {
   }, [isActive]);
 
   // Timer countdown
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    
+    useEffect(() => {
+    let interval: ReturnType<typeof setInterval>;
+
     if (isActive && timeRemaining > 0) {
       interval = setInterval(() => {
         setTimeRemaining((time) => {
@@ -76,6 +76,7 @@ export default function Meditation() {
 
     return () => clearInterval(interval);
   }, [isActive, timeRemaining]);
+
 
   const handleComplete = async () => {
     setIsActive(false);

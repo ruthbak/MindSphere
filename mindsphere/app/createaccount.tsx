@@ -45,6 +45,26 @@ export default function CreateAccount() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  // Truncate password to 72 bytes
+  const truncatePassword = (password: string) => {
+    const encoder = new TextEncoder();
+    const bytes = encoder.encode(password);
+    
+    if (bytes.length <= 72) {
+      return password;
+    }
+    
+    // Truncate to 72 bytes
+    const decoder = new TextDecoder();
+    return decoder.decode(bytes.slice(0, 72));
+  };
+
+  // Get password byte length
+  const getPasswordByteLength = (password: string) => {
+    const encoder = new TextEncoder();
+    return encoder.encode(password).length;
+  };
+
   // Validation function
   const validateForm = () => {
     if (!displayName.trim()) {
@@ -74,6 +94,12 @@ export default function CreateAccount() {
 
     if (password.length < 8) {
       Alert.alert('Validation Error', 'Password must be at least 8 characters');
+      return false;
+    }
+
+    const passwordByteLength = getPasswordByteLength(password);
+    if (passwordByteLength > 72) {
+      Alert.alert('Validation Error', 'Password is too long. Please use a shorter password.');
       return false;
     }
 
@@ -112,22 +138,37 @@ export default function CreateAccount() {
     setIsLoading(true);
 
     try {
-      // Updated API endpoint with /register path
-      const API_URL = 'https://0eeb7eb6ea7b.ngrok-free.app/auth/register';
+      const API_URL = 'https://mindsphere-backend.onrender.com/auth/register';
       
       // Generate username from display name
       const username = generateUsername(displayName);
+      
+      // Clean all inputs and truncate password to 72 bytes
+      const cleanPassword = truncatePassword(password.trim());
+      const cleanEmail = email.trim().toLowerCase();
+      const cleanDisplayName = displayName.trim();
+
+      // Debug logging
+      console.log('========== REGISTRATION DEBUG ==========');
+      console.log('Password length:', cleanPassword.length);
+      console.log('Password byte size:', getPasswordByteLength(cleanPassword));
+      console.log('Username:', username);
+      console.log('Email:', cleanEmail);
+      console.log('========================================');
 
       const requestBody = {
         username: username,
-        email: email.trim(),
-        password: password,
-        display_name: displayName.trim(),
+        email: cleanEmail,
+        password: cleanPassword,
+        display_name: cleanDisplayName,
         anonymous_mode: false,
         language_preference: "en"
       };
 
-      console.log('Sending registration request:', { ...requestBody, password: '*' });
+      console.log('Sending registration request:', { 
+        ...requestBody, 
+        password: 'hidden' 
+      });
 
       const response = await fetch(API_URL, {
         method: 'POST',
@@ -137,10 +178,18 @@ export default function CreateAccount() {
         body: JSON.stringify(requestBody),
       });
 
-      const data = await response.json();
+      // Parse response
+      let data;
+      try {
+        data = await response.json();
+      } catch (e) {
+        console.error('Failed to parse JSON response:', e);
+        const text = await response.text();
+        console.error('Raw response:', text);
+        throw new Error('Invalid response from server');
+      }
 
       if (response.ok) {
-        // Registration successful
         console.log('Registration successful:', data);
         
         Alert.alert(
@@ -164,7 +213,7 @@ export default function CreateAccount() {
       } else {
         // Handle API errors
         console.error('Registration failed:', data);
-        const errorMessage = data.message || data.error || 'Registration failed. Please try again.';
+        const errorMessage = data.detail || data.message || data.error || 'Registration failed. Please try again.';
         Alert.alert('Registration Error', errorMessage);
       }
     } catch (error) {
@@ -172,7 +221,7 @@ export default function CreateAccount() {
       console.error('Registration error:', error);
       Alert.alert(
         'Network Error',
-        'Unable to connect to the server. Please check your internet connection and try again.'
+        error instanceof Error ? error.message : 'Unable to connect to the server. Please check your internet connection and try again.'
       );
     } finally {
       setIsLoading(false);
@@ -239,6 +288,7 @@ export default function CreateAccount() {
                 placeholderTextColor="#d1d5db"
                 value={displayName}
                 onChangeText={setDisplayName}
+                maxLength={50}
               />
             </View>
           </View>
@@ -261,6 +311,7 @@ export default function CreateAccount() {
                 onChangeText={setEmail}
                 keyboardType="email-address"
                 autoCapitalize="none"
+                autoCorrect={false}
               />
             </View>
           </View>
@@ -279,8 +330,13 @@ export default function CreateAccount() {
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
+                autoCapitalize="none"
+                autoCorrect={false}
               />
             </View>
+            <Text style={styles.helperText}>
+              Must be 8-72 characters ({getPasswordByteLength(password)} bytes used)
+            </Text>
           </View>
 
           {/* Terms */}
@@ -438,6 +494,12 @@ const styles = StyleSheet.create({
     paddingRight: 16,
     fontSize: 16,
     color: '#111827',
+  },
+  helperText: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginTop: 4,
+    marginLeft: 4,
   },
   termsText: {
     fontSize: 12,

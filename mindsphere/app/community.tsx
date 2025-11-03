@@ -15,7 +15,7 @@ import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 
 // Replace with your backend base URL
-const BASE_URL = "https://your-api-base-url.com";
+const BASE_URL = "https://mindsphere-backend.onrender.com"; 
 
 /* ------------------ TYPES ------------------ */
 interface Community {
@@ -110,7 +110,7 @@ const Community = () => {
   // 6️⃣ GET /messages/{user_id} — Get Messages by User
   const getUserMessages = async (userId: string) => {
     try {
-      const response = await axios.get<Message[]>(`${BASE_URL}/messages/${userId}`);
+      const response = await axios.get<Message[]>(`${BASE_URL}/messages/user/${userId}`);
       console.log("User messages:", response.data);
     } catch (error) {
       console.error("Error fetching user messages:", error);

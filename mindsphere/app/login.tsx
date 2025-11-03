@@ -36,7 +36,7 @@ export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-
+  router.push('/homepage');
   // Validation function
   const validateForm = () => {
     if (!username.trim()) {
@@ -55,77 +55,77 @@ export default function Login() {
   // API request function
   const handleLogin = async () => {
     // Validate form before submission
-    if (!validateForm()) {
-      return;
-    }
+    // if (!validateForm()) {
+    //   return;
+    // }
 
-    setIsLoading(true);
+    // setIsLoading(true);
 
-    try {
-      // Replace with your actual API endpoint
-      const API_URL = 'https://your-api-endpoint.com/api/login'; // UPDATE THIS
+    // try {
+    //   // Replace with your actual API endpoint
+    //   const API_URL = 'https://mindsphere-backend.onrender.com/auth/login'; // UPDATE THIS
       
-      const requestBody = {
-        username: username.trim(),
-        password: password
-      };
+    //   const requestBody = {
+    //     username: username.trim(),
+    //     password: password
+    //   };
 
-      console.log('Sending login request:', { username: username.trim(), password: '***' });
+    //   console.log('Sending login request:', { username: username.trim(), password: '***' });
 
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      });
+    //   const response = await fetch(API_URL, {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //     body: JSON.stringify(requestBody),
+    //   });
 
-      const data = await response.json();
+    //   const data = await response.json();
 
-      if (response.ok) {
-        // Login successful
-        console.log('Login successful:', data);
+    //   if (response.ok) {
+    //     // Login successful
+    //     console.log('Login successful:', data);
         
-        // TODO: Store auth token if your backend returns one
-        // Example:
-        // if (data.token) {
-        //   await AsyncStorage.setItem('authToken', data.token);
-        //   await AsyncStorage.setItem('userId', data.userId);
-        // }
+    //     // TODO: Store auth token if your backend returns one
+    //     // Example:
+    //     // if (data.token) {
+    //     //   await AsyncStorage.setItem('authToken', data.token);
+    //     //   await AsyncStorage.setItem('userId', data.userId);
+    //     // }
         
-        Alert.alert(
-          'Success',
-          'Login successful!',
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                // Clear form
-                setUsername('');
-                setPassword('');
+    //     Alert.alert(
+    //       'Success',
+    //       'Login successful!',
+    //       [
+    //         {
+    //           text: 'OK',
+    //           onPress: () => {
+    //             // Clear form
+    //             setUsername('');
+    //             setPassword('');
                 
-                // Navigate to homepage
-                router.push('/homepage');
-              },
-            },
-          ]
-        );
-      } else {
-        // Handle API errors
-        console.error('Login failed:', data);
-        const errorMessage = data.message || data.error || 'Invalid username or password';
-        Alert.alert('Login Error', errorMessage);
-      }
-    } catch (error) {
-      // Handle network errors
-      console.error('Login error:', error);
-      Alert.alert(
-        'Network Error',
-        'Unable to connect to the server. Please check your internet connection and try again.'
-      );
-    } finally {
-      setIsLoading(false);
-    }
+    //             // Navigate to homepage
+    //             router.push('/homepage');
+    //           },
+    //         },
+    //       ]
+    //     );
+    //   } else {
+    //     // Handle API errors
+    //     console.error('Login failed:', data);
+    //     const errorMessage = data.message || data.error || 'Invalid username or password';
+    //     Alert.alert('Login Error', errorMessage);
+    //   }
+    // } catch (error) {
+    //   // Handle network errors
+    //   console.error('Login error:', error);
+    //   Alert.alert(
+    //     'Network Error',
+    //     'Unable to connect to the server. Please check your internet connection and try again.'
+    //   );
+    // } finally {
+    //   setIsLoading(false);
+    // }
   };
 
   const handleSignUp = () => {
